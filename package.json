@@ -1,0 +1,30 @@
+{
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "eslint": "8.2.0",
+    "eslint-config-airbnb-base": "15.0.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-import": "2.25.2",
+    "eslint-plugin-prettier": "^5.5.1",
+    "prettier": "^3.6.1"
+  },
+  "scripts": {
+    "start": "cross-env NODE_ENV=staging nodemon index",
+    "production": "cross-env NODE_ENV=production nodemon index",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write ."
+  },
+  "prettier": {
+    "endOfLine": "lf",
+    "semi": true,
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 4,
+    "bracketSpacing": true,
+    "trailingComma": "es5"
+  },
+  "dependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
