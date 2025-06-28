@@ -8,6 +8,7 @@
 const data = require('../../lib/data');
 const { hash } = require('../../helpers/utilities');
 const { parseJSON } = require('../../helpers/utilities');
+const tokenHandler = require('./tokenHandler');
 
 // module scaffolding
 const handler = {};
@@ -62,7 +63,6 @@ handler._users.post = (requestProperties, callback) => {
                     tosAgreement,
                 };
                 // store the user to db
-
                 data.create('users', phone, userObject, (err2) => {
                     if (!err2) {
                         callback(200, {
@@ -94,16 +94,28 @@ handler._users.get = (requestProperties, callback) => {
             ? requestProperties.queryStringObject.phone
             : false;
     if (phone) {
-        // lookup the user
-        data.read('users', phone, (err, u) => {
-            const user = { ...parseJSON(u) };
-            if (!err && user) {
-                delete user.password;
-                callback(200, { user });
-            } else {
-                callback(404, {
-                    error: 'Requested user was not found!',
+        // verify token
+        const token =
+            typeof requestProperties.headersObject.token === 'string'
+                ? requestProperties.headersObject.token
+                : false;
+
+        tokenHandler._token.verify(token, phone, (tokenId) => {
+            if (tokenId) {
+                // lookup the user
+                data.read('users', phone, (err, u) => {
+                    const user = { ...parseJSON(u) };
+                    if (!err && user) {
+                        delete user.password;
+                        callback(200, { user });
+                    } else {
+                        callback(404, {
+                            error: 'Requested user was not found!',
+                        });
+                    }
                 });
+            } else {
+                callback(403, { error: 'User Authentication failure!' });
             }
         });
     } else {
@@ -138,36 +150,48 @@ handler._users.put = (requestProperties, callback) => {
             : false;
     if (phone) {
         if (firstName || lastName || password) {
-            // lookup the user
-            data.read('users', phone, (err1, uData) => {
-                const userData = { ...parseJSON(uData) };
-                if (!err1 && userData) {
-                    console.log('OK');
-                    if (firstName) {
-                        userData.firstName = firstName;
-                    }
-                    if (lastName) {
-                        userData.lastName = lastName;
-                    }
-                    if (password) {
-                        userData.password = hash(password);
-                    }
-                    // store to Update
-                    data.update('users', phone, userData, (err2) => {
-                        if (!err2) {
-                            callback(200, {
-                                error: 'User was updated successfully!',
+            // verify token
+            const token =
+                typeof requestProperties.headersObject.token === 'string'
+                    ? requestProperties.headersObject.token
+                    : false;
+
+            tokenHandler._token.verify(token, phone, (tokenId) => {
+                if (tokenId) {
+                    // lookup the user
+                    data.read('users', phone, (err1, uData) => {
+                        const userData = { ...parseJSON(uData) };
+                        if (!err1 && userData) {
+                            console.log('OK');
+                            if (firstName) {
+                                userData.firstName = firstName;
+                            }
+                            if (lastName) {
+                                userData.lastName = lastName;
+                            }
+                            if (password) {
+                                userData.password = hash(password);
+                            }
+                            // store to Update
+                            data.update('users', phone, userData, (err2) => {
+                                if (!err2) {
+                                    callback(200, {
+                                        error: 'User was updated successfully!',
+                                    });
+                                } else {
+                                    callback(500, {
+                                        error: 'There was a problem in the server site!',
+                                    });
+                                }
                             });
                         } else {
-                            callback(500, {
-                                error: 'There was a problem in the server site!',
+                            callback(400, {
+                                error: 'User not found or invalid data!',
                             });
                         }
                     });
                 } else {
-                    callback(400, {
-                        error: 'User not found or invalid data!',
-                    });
+                    callback(403, { error: 'User Authentication failure!' });
                 }
             });
         } else {
@@ -189,19 +213,32 @@ handler._users.delete = (requestProperties, callback) => {
             ? requestProperties.queryStringObject.phone
             : false;
     if (phone) {
-        data.read('users', phone, (err, userData) => {
-            if (!err && userData) {
-                data.delete('users', phone, () => {
-                    if (!err) {
-                        callback(200, {
-                            message: 'User was successfully deleted!',
+        // verify token
+        const token =
+            typeof requestProperties.headersObject.token === 'string'
+                ? requestProperties.headersObject.token
+                : false;
+
+        tokenHandler._token.verify(token, phone, (tokenId) => {
+            if (tokenId) {
+                // lookup the user
+                data.read('users', phone, (err1, userData) => {
+                    if (!err1 && userData) {
+                        data.delete('users', phone, (err2) => {
+                            if (!err2) {
+                                callback(200, {
+                                    message: 'User was successfully deleted!',
+                                });
+                            } else {
+                                callback(500, { error: 'There was a server side error' });
+                            }
                         });
                     } else {
                         callback(500, { error: 'There was a server side error' });
                     }
                 });
             } else {
-                callback(500, { error: 'There was a server side error' });
+                callback(403, { error: 'User Authentication failure!' });
             }
         });
     } else {
