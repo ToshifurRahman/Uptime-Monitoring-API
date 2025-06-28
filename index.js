@@ -9,9 +9,15 @@
 const http = require('http');
 const { handleReqRes } = require('./helpers/handleReqRes');
 const environment = require('./helpers/environments');
+const { sendTwilioSms } = require('./helpers/notifications');
 
 // app object - module scaffolding
 const app = {};
+
+// Twilio Send Request
+// sendTwilioSms('01700540970', 'Hello World', (err) => {
+//     console.log('This is the error', err);
+// });
 
 // create server
 app.createServer = () => {
