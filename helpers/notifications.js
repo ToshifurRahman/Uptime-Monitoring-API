@@ -58,7 +58,7 @@ notifications.sendTwilioSms = (phone, msg, callback) => {
                 if (status === 200 || status === 201) {
                     callback(false);
                 } else {
-                    console.log('Response Body:', responseData); // <- see the real error
+                    console.log('Response Body:', responseData);
                     callback(`Status code returned was ${status}`);
                 }
             });

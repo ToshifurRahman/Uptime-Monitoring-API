@@ -9,7 +9,7 @@ const data = require('../../lib/data');
 const { parseJSON, createRandomString } = require('../../helpers/utilities');
 const tokenHandler = require('./tokenHandler');
 const { maxChecks } = require('../../helpers/environments');
-const { check } = require('../../routes');
+// const { check } = require('../../routes');
 
 // module scaffolding
 const handler = {};

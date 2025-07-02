@@ -43,6 +43,7 @@ utilities.createRandomString = (strlength) => {
         let output = '';
         for (let i = 1; i <= length; i += 1) {
             const randomCharacter = possiblecharacters.charAt(
+                // eslint-disable-next-line comma-dangle
                 Math.floor(Math.random() * possiblecharacters.length)
             );
             output += randomCharacter;
